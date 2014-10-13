@@ -69,6 +69,16 @@ module JavaBuildpack
         super(@version, @uri, jar_name, target_directory, name)
       end
 
+      # Downloads a given SO file and stores it.
+      #
+      # @param [String] file_name an optional name to save the so as Defaults to +@so_name+.
+      # @param [Pathname] target_directory the directory to store the JAR file in.  Defaults to the component's sandbox.
+      # @param [String] name an optional name for the download.  Defaults to +@component_name+.
+      # @return [Void]
+      def download_so(file_name = so_name, target_directory = @droplet.sandbox, name = @component_name)
+        download_file(@version, @uri, file_name, target_directory, name)
+      end
+
       # Downloads a given TAR file and expands it.
       #
       # @param [Pathname] target_directory the directory to expand the TAR file to.  Defaults to the component's sandbox.
@@ -93,6 +103,13 @@ module JavaBuildpack
       # @return [String] a generated JAR name for the component
       def jar_name
         "#{@droplet.component_id}-#{@version}.jar"
+      end
+
+      # A generated native library (so) name for the component.  Meets the format +<component-id>-<version>.so+
+      #
+      # @return [String] a generated native library (so) name for the component
+      def so_name
+        "#{@droplet.component_id}-#{@version}.so"
       end
 
       private

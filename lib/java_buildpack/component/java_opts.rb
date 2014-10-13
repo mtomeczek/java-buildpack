@@ -43,6 +43,19 @@ module JavaBuildpack
         self
       end
 
+      # Adds a +agentpath+ entry and it's params to the +JAVA_OPTS+.  Prepends +$PWD+ to the path (relative to the droplet root) to
+      # ensure that the path is always accurate.
+      #
+      # @param [Pathname] path the path to the +javaagent+ JAR
+      # @param [Hash] agentArgs hash with agent params
+      # @return [JavaOpts]     +self+ for chaining
+      def add_agentpath(path, agentArgs = {})
+        java_opts = "-agentpath:#{qualify_path path}"
+        java_opts.concat '=' + agentArgs.map { |k, v| "#{k}=#{v}" }.join(',') unless agentArgs.empty?
+        self << java_opts
+        self
+      end
+
       # Adds a system property to the +JAVA_OPTS+.  Ensures that the key is prepended with +-D+.  If the value is a
       # +Pathname+, then prepends +$PWD+ to the path (relative to the droplet root) to ensure that the path is always
       # accurate.  Otherwise, uses the value as-is.

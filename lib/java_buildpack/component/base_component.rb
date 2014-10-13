@@ -107,6 +107,21 @@ module JavaBuildpack
         end
       end
 
+      # Downloads a given file and stores it.
+      #
+      # @param [String] version the version of the download
+      # @param [String] uri the uri of the download
+      # @param [String] file_name the name to save the file as
+      # @param [Pathname] target_directory the directory to store the file in.  Defaults to the component's sandbox.
+      # @param [String] name an optional name for the download.  Defaults to +@component_name+.
+      # @return [Void]
+      def download_file(version, uri, file_name, target_directory = @droplet.sandbox, name = @component_name)
+        download(version, uri, name) do |file|
+          FileUtils.mkdir_p target_directory
+          FileUtils.cp_r(file.path, target_directory + file_name)
+        end
+      end
+
       # Downloads a given TAR file and expands it.
       #
       # @param [String] version the version of the download

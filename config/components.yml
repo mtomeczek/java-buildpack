@@ -36,6 +36,7 @@ frameworks:
   - "JavaBuildpack::Framework::JavaOpts"
   - "JavaBuildpack::Framework::MariaDbJDBC"
   - "JavaBuildpack::Framework::NewRelicAgent"
+  - "JavaBuildpack::Framework::DynaTraceAgent"
   - "JavaBuildpack::Framework::PlayFrameworkAutoReconfiguration"
   - "JavaBuildpack::Framework::PlayFrameworkJPAPlugin"
   - "JavaBuildpack::Framework::PostgresqlJDBC"
