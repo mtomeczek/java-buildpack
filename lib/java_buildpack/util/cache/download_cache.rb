@@ -77,7 +77,7 @@ module JavaBuildpack
 
         private
 
-        CA_CERTS_DIRECTORY = (Pathname.new(__FILE__).dirname + '../../../../resources/ca_certs').freeze
+        CA_FILE = (Pathname.new(__FILE__).dirname + '../../../../resources/ca_certs.pem').freeze
 
         FAILURE_LIMIT = 5.freeze
 
@@ -112,7 +112,7 @@ module JavaBuildpack
 
         TIMEOUT_SECONDS = 10.freeze
 
-        private_constant :CA_CERTS_DIRECTORY, :FAILURE_LIMIT, :HTTP_ERRORS, :REDIRECT_TYPES, :TIMEOUT_SECONDS
+        private_constant :CA_FILE, :FAILURE_LIMIT, :HTTP_ERRORS, :REDIRECT_TYPES, :TIMEOUT_SECONDS
 
         def attempt(http, request, cached_file)
           downloaded = false
@@ -177,6 +177,17 @@ module JavaBuildpack
           end
         end
 
+        def debug_ssl(http)
+          socket = http.instance_variable_get('@socket')
+          return unless socket
+
+          io = socket.io
+          return unless io
+
+          session = io.session
+          @logger.debug { session.to_text } if session
+        end
+
         def from_mutable_cache(uri)
           cached_file = CachedFile.new @mutable_cache_root, uri, true
           cached      = update URI(uri), cached_file
@@ -208,7 +219,12 @@ module JavaBuildpack
 
           if secure?(rich_uri)
             http_options[:use_ssl] = true
-            http_options[:ca_path] = CA_CERTS_DIRECTORY.to_s if CA_CERTS_DIRECTORY.exist?
+            @logger.debug { 'Adding HTTP options for secure connection' }
+
+            if CA_FILE.exist?
+              http_options[:ca_file] = CA_FILE.to_s
+              @logger.debug { "Adding additional certs from #{CA_FILE}" }
+            end
           end
 
           http_options
@@ -251,6 +267,8 @@ module JavaBuildpack
         def update(uri, cached_file)
           proxy(uri).start(uri.host, uri.port, http_options(uri)) do |http|
             @logger.debug { "HTTP: #{http.address}, #{http.port}, #{http_options(uri)}" }
+            debug_ssl(http) if secure?(uri)
+
             request = request uri, cached_file
             request.basic_auth uri.user, uri.password if uri.user && uri.password
 
